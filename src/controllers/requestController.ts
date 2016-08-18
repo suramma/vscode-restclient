@@ -9,6 +9,9 @@ import { HttpResponseTextDocumentContentProvider } from '../views/httpResponseTe
 import { EOL } from 'os';
 
 const elegantSpinner = require('elegant-spinner');
+const pretty = require('pretty-data2').pd;
+const beautify = require('js-beautify').js_beautify;
+
 const spinner = elegantSpinner();
 
 export class RequestController {
@@ -67,7 +70,16 @@ export class RequestController {
             this.clearSendProgressStatusText();
             this._statusBarItem.text = ` $(clock) ${response.elapsedMillionSeconds}ms`;
             this._statusBarItem.tooltip = 'Duration';
-
+            switch (response.headers["content-type"].split(";")[0]) {
+                case "text/javascript":
+                    response.body = beautify(response.body);
+                    break;
+                    
+                default:
+                    response.body = pretty.xml(response.body);
+                    break;
+            }
+          
             this._responseTextProvider.response = response;
             this._responseTextProvider.update(this._previewUri);
 
